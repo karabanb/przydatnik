@@ -1,0 +1,26 @@
+# fukcja zliczająca zera i nulle
+
+df_stat<-function(data)
+{
+  df_status = data.frame(
+    q_zeros = sapply(data, function(x) sum(x == 0, na.rm = T)),
+    p_zeros = round(100 * sapply(data, function(x) sum(x ==0, na.rm = T))/nrow(data), 2),
+    q_na = sapply(data, function(x) sum(is.na(x))), 
+    p_na = round(100 * sapply(data, function(x) sum(is.na(x)))/nrow(data), 2),
+    type = sapply(data, class),
+    unique = sapply(data,function(x) sum(!is.na(unique(x)))))
+  df_status$variable = rownames(df_status)
+  rownames(df_status) = NULL
+  df_status = df_status[, c(7, 1, 2, 3, 4, 5, 6)]
+}
+
+
+
+## funkcja zmieniajaca braki danych w facotrach
+
+for(i in 1:dim(dane.fac)[2])
+{
+  nazwa<-c(as.character(names(dane.fac[i])))
+  dane.fac[,nazwa]<-factor(dane.fac[,nazwa], levels = c(levels(dane.fac[,nazwa]),"brakDanych"))
+  dane.fac[which(is.na(dane.fac[,nazwa])),nazwa]<-"brakDanych"
+}
