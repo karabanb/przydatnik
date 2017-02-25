@@ -103,3 +103,13 @@ ranking.predyktorow<-function(ramka.danych,objasniana,klasa.modelowana=1,
   return(output[order(output$IV,decreasing=T),])
 }
 
+######## tabela frakcji w % ###########
+
+#  library(knitr)
+
+pct <- function(x){
+  tbl <- table(x)
+  tbl_pct <- cbind(tbl,round(prop.table(tbl)*100,2))
+  colnames(tbl_pct) <- c('Count','Percentage')
+  kable(tbl_pct)
+}
