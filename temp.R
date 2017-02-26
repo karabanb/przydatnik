@@ -19,8 +19,9 @@ df.tresholds<-data.frame(treshold=score,
 data2cutoff$pred.cut<-0
 conf.matrix<-matrix(0,2,2)
 
-LGD<-0.49
-profit<-0.5
+LGD<-0.6 # czesc straconego kapitalu
+profit<-0.5 # marza na udzielonej pozyczce
+pozyczka<-3000 # wartosc kapitalu w udzielonej pozyczce
 for (i in score ){
 s<-i  
 
@@ -34,9 +35,10 @@ df.tresholds[df.tresholds$treshold==i,"TP"]<-conf.matrix[2,2]
 df.tresholds[df.tresholds$treshold==i,"TN"]<-conf.matrix[1,1]
 df.tresholds[df.tresholds$treshold==i,"FP"]<-conf.matrix[1,2]
 df.tresholds[df.tresholds$treshold==i,"FN"]<-conf.matrix[2,1]
-df.tresholds[df.tresholds$treshold==i,"Gain"]<-(conf.matrix[2,2]*3000*profit)-(conf.matrix[1,2]*3000*LGD)
+df.tresholds[df.tresholds$treshold==i,"Gain"]<-(conf.matrix[2,2]*pozyczka*profit)-(conf.matrix[1,2]*pozyczka*LGD)
 }
 
 (cut.point<-df.tresholds[which.max(df.tresholds$Gain),"treshold"])
 
 ggplot(data=df.tresholds, aes(x=treshold, y=Gain))+geom_line()+geom_vline(xintercept = cut.point)
+
