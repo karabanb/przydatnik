@@ -9,8 +9,6 @@ library(rpart)
 library(ROCR)
 library(pROC)
 
-
-
 ##### loading daset ####################
 
 data("iris")
@@ -25,7 +23,7 @@ raw.data$Species <- droplevels(raw.data$Species)
 
 fitControl <- trainControl(method = "boot",
                            number = 100,
-                           repeats = 100,
+                         ##  repeats = 100,
                            classProbs = TRUE,
                            summaryFunction = twoClassSummary)
 
