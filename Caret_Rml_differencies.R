@@ -40,4 +40,23 @@ confusionMatrix(data = m1.0_pred, reference =  raw.data$Species, positive = "vir
 m1.0_pred <- ifelse(m1.0_pred %in% "virginica",1,0)
 
 plot.roc(roc(response = raw.data$Species, predictor = m1.0_pred))
+
+
+#### ---------------------------------- #####
+
+task <- makeClassifTask(data = raw.data, target = "Species")
+
+lrn <- makeLearner("classif.rpart", predict.type = "prob")
+
+n <- nrow(raw.data)
+
+train.set <- sample(n, size = 2/3 * n)
+test.set <- setdiff(1:n, train.set)
+
+m2.0 <-mlr::train(lrn, task, subset = train.set)
+
+pred <- predict(m2.0, task = task, subset = test.set)
+
+mlr::performance(pred, measures = list(auc))
+
  
