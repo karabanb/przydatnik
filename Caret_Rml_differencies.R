@@ -46,7 +46,7 @@ plot.roc(roc(response = raw.data$Species, predictor = m1.0_pred))
 
 task <- makeClassifTask(data = raw.data, target = "Species")
 
-lrn <- makeLearner("classif.rpart", predict.type = "prob")
+lrn <- makeLearner("classif.rpart", predict.type = "response")
 
 n <- nrow(raw.data)
 
@@ -55,8 +55,11 @@ test.set <- setdiff(1:n, train.set)
 
 m2.0 <-mlr::train(lrn, task, subset = train.set)
 
-pred <- predict(m2.0, task = task, subset = test.set)
+pred  <- predict(m2.0, task = task, subset = test.set)
+m2.0_pred <- predict(m2.0, newdata = raw.data, type = "raw")
 
-mlr::performance(pred, measures = list(auc))
+mlr::performance(pred, measures = acc)
+
+confusionMatrix(data = m2.0_pred$data$response, reference = m2.0_pred$data$truth)
 
  
