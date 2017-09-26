@@ -46,7 +46,7 @@ plot.roc(roc(response = raw.data$Species, predictor = m1.0_pred))
 
 task <- makeClassifTask(data = raw.data, target = "Species")
 
-lrn <- makeLearner("classif.rpart", predict.type = "response")
+lrn <- makeLearner("classif.rpart", predict.type = "prob")
 
 n <- nrow(raw.data)
 
@@ -56,10 +56,13 @@ test.set <- setdiff(1:n, train.set)
 m2.0 <-mlr::train(lrn, task, subset = train.set)
 
 pred  <- predict(m2.0, task = task, subset = test.set)
-m2.0_pred <- predict(m2.0, newdata = raw.data, type = "raw")
+m2.0_pred <- predict(m2.0, newdata = raw.data, type = "prob")
 
 mlr::performance(pred, measures = acc)
 
 confusionMatrix(data = m2.0_pred$data$response, reference = m2.0_pred$data$truth)
 
+df <- generateThreshVsPerfData(m2.0_pred, measures = list(fpr, tpr, mmce))
+
+plotROCCurves(df)
  
