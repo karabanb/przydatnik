@@ -12,7 +12,7 @@ classif.lrn <-makeLearner("classif.rpart", predict.type = "prob")
 
 ## definiovanie CV
 
-rdesc <- makeResampleDesc("CV", iters = 3)
+rdesc <- makeResampleDesc("CV",predict = "test")
 
-r <- resample(learner = classif.lrn,task = classif.task, resampling = rdesc)
+r <- resample(learner = classif.lrn,task = classif.task, resampling = rdesc, measures =  list(auc,acc))
 
