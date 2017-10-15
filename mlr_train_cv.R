@@ -7,6 +7,8 @@ library(ggplot2)
 
 data("GermanCredit")
 
+set.seed(1234)
+
 ####### building the models ######
 
 classif.task <- makeClassifTask(data = GermanCredit, target = "Class")
@@ -15,7 +17,7 @@ classif.lrn <-makeLearner("classif.rpart", predict.type = "prob")
 
 #### modyfing of the hyperparameteres #######
 
-classif.lrn <- setHyperPars(classif.lrn, maxdepth =3)
+classif.lrn <- setHyperPars(classif.lrn, maxdepth =3, xval =5)
 
 m1 <- mlr::train(classif.lrn, classif.task)
 
@@ -24,15 +26,15 @@ m1.rpart <- getLearnerModel(m1)
 rpart.plot(m1.rpart)
 
 ## definiovanie CV
-
-rdesc <- makeResampleDesc("CV",predict = "test", iters = 10)
+set.seed(1234)
+rdesc <- makeResampleDesc("CV",predict = "test", iters = 4, stratify = TRUE)
 
 r <- resample(
                 learner = classif.lrn
               , task = classif.task
               , resampling = rdesc
               , measures =  list(auc,acc, fpr, tnr)
-              , models = TRUE
+              , extract = getLearnerModel
               )
 
 ## wyniki CV
@@ -49,11 +51,15 @@ barsACC <- ggplot(data = CVScore, aes(iter, acc)) +
            geom_col() +
            geom_line( aes(iter, mean(acc)))
 
-## modele
+## modele sprawdzenie
 
-modelsList <- lapply(r$models, getLearnerModel)
+rin <- makeResampleInstance(rdesc,classif.task)
 
-sapply(modelsList, rpart.plot)
+# na calym
+
+
+
+
 
 
 
