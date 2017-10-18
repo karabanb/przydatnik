@@ -17,7 +17,7 @@ classif.lrn <-makeLearner("classif.rpart", predict.type = "prob")
 
 #### modyfing of the hyperparameteres #######
 
-classif.lrn <- setHyperPars(classif.lrn, maxdepth =3, xval =5)
+classif.lrn <- setHyperPars(classif.lrn, maxdepth =10, xval =5, minsplit = 5)
 
 m1 <- mlr::train(classif.lrn, classif.task)
 
@@ -55,8 +55,25 @@ barsACC <- ggplot(data = CVScore, aes(iter, acc)) +
 
 rin <- makeResampleInstance(rdesc,classif.task)
 
-# na calym
+# hyperparameter tuning
 
+minsplit <- makeParamSet(
+                makeDiscreteParam("minsplit",
+                                  values = c(5,10,15,25,30,40,60)),
+                makeDiscreteParam("maxdepth",
+                                  values = c(seq(2,12,1)))
+                        )
+ctrl <- makeTuneControlGrid()
+
+set.seed(1234)
+
+res <- tuneParams(learner = classif.lrn,
+                  task = classif.task,
+                  par.set = minsplit,
+                  resampling = rdesc,
+                  control = ctrl,
+                  measures = list(auc,acc)
+)
 
 
 
