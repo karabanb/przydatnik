@@ -27,7 +27,9 @@ rpart.plot(m1.rpart)
 
 ## definiovanie CV
 set.seed(1234)
+
 rdesc <- makeResampleDesc("CV",predict = "test", iters = 4, stratify = TRUE)
+rdescLOO <- makeResampleDesc("LOO",predict = "test")
 
 r <- resample(
                 learner = classif.lrn
@@ -36,6 +38,14 @@ r <- resample(
               , measures =  list(auc,acc, fpr, tnr)
               , extract = getLearnerModel
               )
+
+rLOO <- resample(
+                    learner = classif.lrn
+                  , task = classif.task
+                  , resampling = rdescLOO
+                  , measures =  list(auc,acc, fpr, tnr)
+                  , extract = getLearnerModel
+)
 
 ## wyniki CV
 
@@ -78,8 +88,9 @@ res <- tuneParams(learner = classif.lrn,
 
 
 
+prLOO <- predict(rLOO$extract[4], newdata = GermanCredit, type = 'class')
 
-
+confusionMatrix(data = prLOO[[1]], reference = GermanCredit$Class)
 
 
 
