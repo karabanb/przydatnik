@@ -4,6 +4,7 @@ library(caret)
 library(rpart)
 library(rpart.plot)
 library(ggplot2)
+library(dplyr)
 
 data("GermanCredit")
 
@@ -11,11 +12,12 @@ set.seed(1234)
 
 ####### pararell computing #######
 
-parallelStartSocket(2)
+#parallelStartSocket(4)
 
 ####### building the models ######
 
 classif.task <- makeClassifTask(data = GermanCredit, target = "Class")
+classif.cost.task <- makeClassifTask(data = GermanCredit, target = "Class")
 
 classif.lrn.m1 <- makeLearner("classif.rpart", predict.type = "prob")
 classif.lrn.m2 <- makeLearner("classif.ctree", predict.type = "prob")
@@ -27,7 +29,7 @@ set.seed(1234)
 
 rdesc <- makeResampleDesc("CV",predict = "test", iters = 10, stratify = TRUE)
 rdescLOO <- makeResampleDesc("LOO",predict = "test")
-rdescRCV <- makeResampleDesc("RepCV",predict = "test", reps = 10, folds = 10, stratify = TRUE)
+rdescRCV <- makeResampleDesc("RepCV",predict = "test", reps = 5, folds = 10, stratify = TRUE)
 
 r <- resample(
                 learner = classif.lrn
@@ -97,6 +99,7 @@ res.m2 <- tuneParams(learner = classif.lrn.m2,
                        measures = list(f1, auc, mmce)
                       )
 
+# dodac rankingi parametrow
 
 ### budowa klasyfikatora na podstawie optymalnych parametrow
 
@@ -129,15 +132,23 @@ rRCV.m1 <- resample(
                 , extract = getLearnerModel               
                 )
 
-RCV.m1 <- rRCV.m1$measures.test
+
+RCV.m1 <- cbind(rRCV.m1$measures.test, rRCV$pred$instance$group)
+RCV.m1 <- RCV.m1 %>% rename(., fold = 'rRCV$pred$instance$group')
 
 barsAUC.m1 <- ggplot(data = RCV.m1, aes(iter, auc)) +
-  geom_col() +
-  geom_line( aes(iter, mean(auc)))
+  geom_col(aes(fill = fold)) +
+  geom_line( aes(iter, mean(auc))) +
+  scale_fill_brewer(palette = "Paired") +
+  ylim(0,1) +
+  theme_bw()
 
-barsACC.m1 <- ggplot(data = RCV.m1, aes(iter, mmce)) +
-  geom_col() +
-  geom_line( aes(iter, mean(mmce)))
+barsMMCE.m1 <- ggplot(data = RCV.m1, aes(iter, mmce)) +
+  geom_col(aes(fill = fold)) +
+  geom_line( aes(iter, mean(mmce)))+
+  scale_fill_brewer(palette = "Paired") +
+  ylim(0,0.5) +
+  theme_bw()
 
 
 rRCV.m2 <- resample(
@@ -148,13 +159,24 @@ rRCV.m2 <- resample(
   , extract = getLearnerModel               
 )
 
-RCV.m2 <- rRCV.m2$measures.test
+RCV.m2 <- cbind(rRCV.m2$measures.test, rRCV$pred$instance$group)
+RCV.m2 <- RCV.m2 %>% rename(., fold = 'rRCV$pred$instance$group')
 
 barsAUC.m2 <- ggplot(data = RCV.m2, aes(iter, auc)) +
-  geom_col() +
-  geom_line( aes(iter, mean(auc)))
+  geom_col(aes(fill = fold)) +
+  geom_line( aes(iter, mean(auc))) +
+  scale_fill_brewer(palette = "Paired") +
+  ylim(0,1) +
+  theme_bw()
 
-barsACC.m2 <- ggplot(data = RCV.m2, aes(iter, mmce)) +
-  geom_col() +
-  geom_line( aes(iter, mean(mmce)))
+barsMMCE.m2 <- ggplot(data = RCV.m2, aes(iter, mmce)) +
+  geom_col(aes(fill= fold)) +
+  geom_line( aes(iter, mean(mmce))) +
+  scale_fill_brewer(palette = "Paired")+
+  ylim(0,0.5)+
+  theme_bw()
+
+
+
+
 
