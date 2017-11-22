@@ -16,7 +16,7 @@ set.seed(1234)
 
 ####### building the models ######
 
-classif.task <- makeClassifTask(data = GermanCredit, target = "Class")
+classif.task <- makeClassifTask(data = select(GermanCredit, Class, Duration), target = "Class")
 classif.cost.task <- makeClassifTask(data = GermanCredit, target = "Class")
 
 classif.lrn.m1 <- makeLearner("classif.rpart", predict.type = "prob")
@@ -29,10 +29,10 @@ set.seed(1234)
 
 rdesc <- makeResampleDesc("CV",predict = "test", iters = 10, stratify = TRUE)
 rdescLOO <- makeResampleDesc("LOO",predict = "test")
-rdescRCV <- makeResampleDesc("RepCV",predict = "test", reps = 5, folds = 10, stratify = TRUE)
+rdescRCV <- makeResampleDesc("RepCV",predict = "test", reps = 7, folds = 10, stratify = TRUE)
 
 r <- resample(
-                learner = classif.lrn
+                learner = classif.lrn.m1
               , task = classif.task
               , resampling = rdesc
               , measures =  list(auc,acc, fpr, tnr)
@@ -101,6 +101,10 @@ res.m2 <- tuneParams(learner = classif.lrn.m2,
 
 # dodac rankingi parametrow
 
+param.rank.m1 <- generateHyperParsEffectData(res.m1)$data
+
+param.rank.m2 <- generateHyperParsEffectData(res.m2)$data
+
 ### budowa klasyfikatora na podstawie optymalnych parametrow
 
 classif.lrn.m1 <- setHyperPars(classif.lrn.m1, maxdepth =8, xval =10, minsplit = 25)
@@ -134,17 +138,17 @@ rRCV.m1 <- resample(
 
 
 RCV.m1 <- cbind(rRCV.m1$measures.test, rRCV$pred$instance$group)
-RCV.m1 <- RCV.m1 %>% rename(., fold = 'rRCV$pred$instance$group')
+RCV.m1 <- RCV.m1 %>% rename(., rep = 'rRCV$pred$instance$group')
 
 barsAUC.m1 <- ggplot(data = RCV.m1, aes(iter, auc)) +
-  geom_col(aes(fill = fold)) +
+  geom_col(aes(fill = rep)) +
   geom_line( aes(iter, mean(auc))) +
   scale_fill_brewer(palette = "Paired") +
   ylim(0,1) +
   theme_bw()
 
 barsMMCE.m1 <- ggplot(data = RCV.m1, aes(iter, mmce)) +
-  geom_col(aes(fill = fold)) +
+  geom_col(aes(fill = rep)) +
   geom_line( aes(iter, mean(mmce)))+
   scale_fill_brewer(palette = "Paired") +
   ylim(0,0.5) +
@@ -160,21 +164,22 @@ rRCV.m2 <- resample(
 )
 
 RCV.m2 <- cbind(rRCV.m2$measures.test, rRCV$pred$instance$group)
-RCV.m2 <- RCV.m2 %>% rename(., fold = 'rRCV$pred$instance$group')
+RCV.m2 <- RCV.m2 %>% rename(., rep = 'rRCV$pred$instance$group')
 
 barsAUC.m2 <- ggplot(data = RCV.m2, aes(iter, auc)) +
-  geom_col(aes(fill = fold)) +
+  geom_col(aes(fill = rep)) +
   geom_line( aes(iter, mean(auc))) +
   scale_fill_brewer(palette = "Paired") +
   ylim(0,1) +
   theme_bw()
 
 barsMMCE.m2 <- ggplot(data = RCV.m2, aes(iter, mmce)) +
-  geom_col(aes(fill= fold)) +
+  geom_col(aes(fill= rep)) +
   geom_line( aes(iter, mean(mmce))) +
   scale_fill_brewer(palette = "Paired")+
   ylim(0,0.5)+
-  theme_bw()
+  theme_bw()+
+  annotate("text", x = 20, y = 0.4, label = paste("srednia ", mean(RCV.m2$mmce)))
 
 
 
