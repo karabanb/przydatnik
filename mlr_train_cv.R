@@ -7,7 +7,7 @@ library(ggplot2)
 library(dplyr)
 
 data("GermanCredit")
-
+####
 set.seed(1234)
 
 ####### pararell computing #######
