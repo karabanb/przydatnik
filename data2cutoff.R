@@ -3,6 +3,8 @@ library(caret)
 library(ggplot2)
 data("GermanCredit")
 
+#testeer po reinstalacji gita
+
 t.c<-trainControl(method = "repeatedcv", number = 5, repeats = 1)
 in.train<-createDataPartition(y=GermanCredit$Class,p=0.7, list = FALSE)
 train.data<-GermanCredit[in.train,]
