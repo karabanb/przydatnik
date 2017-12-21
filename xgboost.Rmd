@@ -1,0 +1,46 @@
+---
+title: "xgboost"
+author: "Bartek"
+date: "20 12 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+```{r warning=FALSE}
+library(caret)
+library(mlr)
+library(xgboost)
+library(tidyverse)
+```
+
+```{r}
+
+raw_data <- data("GermanCredit")
+
+task_german <- makeClassifTask(data = GermanCredit, target = "Class")
+
+class_rpart_german <- makeLearner("classif.rpart", predict.type = "prob")
+class_xgboost_german <- makeLearner("classif.xgboost", predict.type = "prob")
+class_rf_german <- makeLearner("classif.randomForest", predict.type = "prob")
+
+parm_rpart <- makeParamSet(
+                            makeDiscreteParam("cp", values = c(0000.1, 0.001, 0.01))
+)
+
+param_rf <- makeParamSet(
+                          makeDiscreteParam("ntree", values = seq(200, 700, 100))
+)
+
+param_xg <- makeParamSet(
+                          makeDiscreteParam("gamma", values = seq(0,3,1))
+)
+
+
+
+```
+
+
