@@ -12,3 +12,25 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Replacing NA's by predefined value
 
 
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(recipes)
+
+```
+
+```{r echo=FALSE}
+
+data("credit_data")
+
+str(credit_data)
+summary(credit_data)
+```
+### Replacing all NA's in data frame by choosed value.
+
+```{r}
+
+credit_data_allnas <- credit_data[is.na(credit_data), is.factor(colnames(credit_data))]
+
+```
+
