@@ -10,11 +10,11 @@ data("GermanCredit")
 ####
 set.seed(1234)
 
-####### pararell computing #######
+####### pararell computing ---------------------------------------------------------------------------------------------
 
 #parallelStartSocket(4)
 
-####### building the models ######
+####### building the models --------------------------------------------------------------------------------------------
 
 classif.task <- makeClassifTask(data = select(GermanCredit, Class, Duration), target = "Class")
 classif.cost.task <- makeClassifTask(data = GermanCredit, target = "Class")
