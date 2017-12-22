@@ -27,7 +27,7 @@ class_rpart_german <- makeLearner("classif.rpart", predict.type = "prob")
 class_xgboost_german <- makeLearner("classif.xgboost", predict.type = "prob")
 class_rf_german <- makeLearner("classif.randomForest", predict.type = "prob")
 
-parm_rpart <- makeParamSet(
+param_rpart <- makeParamSet(
                             makeDiscreteParam("cp", values = c(0000.1, 0.001, 0.01))
 )
 
@@ -36,11 +36,59 @@ param_rf <- makeParamSet(
 )
 
 param_xg <- makeParamSet(
-                          makeDiscreteParam("gamma", values = seq(0,3,1))
+                          makeDiscreteParam("gamma", values = c(0.1,0.2)),
+                          makeDiscreteParam("booster", values = c("dart")),
+                          makeDiscreteParam("eta", values = seq(0.1, 0.2)),
+                          makeDiscreteParam("nrounds", values = seq(50, 500, 50))
 )
 
+ctrl = makeTuneControlGrid()
+
+res <- makeResampleDesc(stratify = TRUE, method = "RepCV", reps =10)
+
+sd_auc <- setAggregation(auc, test.sd)
 
 
+tune_rpart <-tuneParams(learner = class_rpart_german,
+                        task = task_german,
+                        resampling = res,
+                        measures = list(acc, auc, sd_auc, fnr, fpr, f1),
+                        par.set =  param_rpart,
+                        control = ctrl,
+                        show.info = TRUE
+                        )
+
+tune_rf <- tuneParams(learner = class_rf_german,
+                        task = task_german,
+                        resampling = res,
+                        measures = list(acc, auc, sd_auc, fnr, fpr, f1),
+                        par.set =  param_rf,
+                        control = ctrl,
+                        show.info = TRUE
+                        )
+
+result_rf_tune <- as.data.frame(tune_rf$opt.path)
+
+tune_xg <- tuneParams(learner = class_xgboost_german,
+                        task = task_german,
+                        resampling = res,
+                        measures = list(acc, auc, sd_auc, fnr, fpr, f1),
+                        par.set =  param_xg,
+                        control = ctrl,
+                        show.info = TRUE
+                        )
+
+results_xg_tune <- as.data.frame(tune_xg$opt.path)
+                        
+
+z <- filter(results_xg_tune)
+g <- ggplot(data = results_xg_tune)  
+
+g + geom_boxplot(aes(x= eta, y = auc.test.mean))
+
+g + geom_boxplot(aes(x= nrounds, y = auc.test.mean)) + facet_grid(gamma ~.)
+
+g + geom_point(aes(f1.test.mean, auc.test.mean, col = factor(gamma)), alpha = 0.5, position = "jitter")
 ```
 
 
