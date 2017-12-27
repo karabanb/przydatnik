@@ -38,21 +38,26 @@ param_rf <- makeParamSet(
 param_xg <- makeParamSet(
                           makeDiscreteParam("gamma", values = c(0.1,0.2)),
                           makeDiscreteParam("booster", values = c("dart")),
-                          makeDiscreteParam("eta", values = seq(0.1, 0.2)),
-                          makeDiscreteParam("nrounds", values = seq(50, 500, 50))
-)
+                        #  makeDiscreteParam("eta", values = seq(0.1, 0.2)),
+                          makeDiscreteParam("nrounds", values = seq(50, 500, 50)),
+                          makeDiscreteParam("subsample", values = c(0.8, 0.9, 1))
+                        )
+
 
 ctrl = makeTuneControlGrid()
 
-res <- makeResampleDesc(stratify = TRUE, method = "RepCV", reps =10)
+res <- makeResampleDesc(stratify = TRUE, method = "CV", predict = "both")
 
 sd_auc <- setAggregation(auc, test.sd)
+train_acc <- setAggregation(acc, train.mean)
+train_auc <- setAggregation(auc, train.mean)
+
 
 
 tune_rpart <-tuneParams(learner = class_rpart_german,
                         task = task_german,
                         resampling = res,
-                        measures = list(acc, auc, sd_auc, fnr, fpr, f1),
+                        measures = list(acc, auc, sd_auc, fnr, fpr, f1, train_acc, train_auc),
                         par.set =  param_rpart,
                         control = ctrl,
                         show.info = TRUE
@@ -61,7 +66,7 @@ tune_rpart <-tuneParams(learner = class_rpart_german,
 tune_rf <- tuneParams(learner = class_rf_german,
                         task = task_german,
                         resampling = res,
-                        measures = list(acc, auc, sd_auc, fnr, fpr, f1),
+                        measures = list(acc, auc, sd_auc, fnr, fpr, f1, train_acc, train_auc),
                         par.set =  param_rf,
                         control = ctrl,
                         show.info = TRUE
@@ -72,7 +77,7 @@ result_rf_tune <- as.data.frame(tune_rf$opt.path)
 tune_xg <- tuneParams(learner = class_xgboost_german,
                         task = task_german,
                         resampling = res,
-                        measures = list(acc, auc, sd_auc, fnr, fpr, f1),
+                        measures = list(acc, train_acc, auc, train_auc, sd_auc, fnr, fpr, f1),
                         par.set =  param_xg,
                         control = ctrl,
                         show.info = TRUE
@@ -84,7 +89,7 @@ results_xg_tune <- as.data.frame(tune_xg$opt.path)
 z <- filter(results_xg_tune)
 g <- ggplot(data = results_xg_tune)  
 
-g + geom_boxplot(aes(x= eta, y = auc.test.mean))
+g + geom_boxplot(aes(x= nrounds, y = auc.test.mean))
 
 g + geom_boxplot(aes(x= nrounds, y = auc.test.mean)) + facet_grid(gamma ~.)
 
